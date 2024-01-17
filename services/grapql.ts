@@ -1,7 +1,7 @@
 import { gql, Client, cacheExchange, fetchExchange } from '@urql/core';
 
 const client = new Client({
-  url: 'http://localhost:3000/graphql',
+  url: process.env.BACKEND_URL ?? '',
   exchanges: [fetchExchange],
 });
 

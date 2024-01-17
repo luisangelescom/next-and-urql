@@ -14,7 +14,7 @@ const MessageSub = gql`
   }
 `;
 
-const url = 'localhost:3000/graphql';
+const url = process.env.NEXT_PUBLIC_BACKEND_URL;
 const UseSubscribeGQ = () => {
   useEffect(() => {
     const wsClient = createWSClient({ url: `ws://${url}` });
