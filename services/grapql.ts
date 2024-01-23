@@ -5,11 +5,21 @@ const client = new Client({
   exchanges: [fetchExchange],
 });
 
-const TodosQuery = gql`
-  query {
-    address {
-      street
-      zip
+// const TodosQuery = gql`
+//   query Posts {
+//     posts {
+//       id
+//       body
+//       title
+//     }
+//   }
+// `;
+const books = gql`
+  query Book {
+    book {
+      isbn
+      price
+      title
     }
   }
 `;
@@ -18,5 +28,5 @@ export const getAllAddress = async () => {
   await new Promise((resolve) => {
     setTimeout(resolve, 1000);
   });
-  return client.query(TodosQuery, {}).toPromise();
+  return client.query(books, {}).toPromise();
 };

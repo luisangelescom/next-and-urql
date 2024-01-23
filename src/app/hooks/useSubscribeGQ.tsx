@@ -1,56 +1,65 @@
 'use client';
 import { useEffect } from 'react';
-import { Client, cacheExchange, fetchExchange, gql, subscriptionExchange } from '@urql/core';
-import { createClient as createWSClient } from 'graphql-ws';
-
 import { revalidateHome } from '@/server/service/revalidate-home';
 
-const MessageSub = gql`
-  subscription SubAddress {
-    subAddress(topic: "test") {
-      street
-      zip
-    }
-  }
-`;
+import * as withAbsintheSocket from '@absinthe/socket';
+import { Socket as PhoenixSocket } from 'phoenix';
 
-const url = process.env.NEXT_PUBLIC_BACKEND_URL;
+// const operation = `
+//   subscription userSubscription($repoName: String!) {
+//     commentAdded(repoName: $repoName) {
+//       body
+//       id
+//       title
+//     }
+//   }
+// `;
+
+const operation = `subscription BookReader {
+  bookReader {
+      email
+      id
+      isbn
+      name
+  }
+}`;
+
+const URLSocket = process.env.NEXT_PUBLIC_BACKEND_URL ?? '';
 const UseSubscribeGQ = () => {
   useEffect(() => {
-    const wsClient = createWSClient({ url: `ws://${url}` });
-    const client = new Client({
-      url: `http://${url}`,
-      exchanges: [
-        cacheExchange,
-        fetchExchange,
-        subscriptionExchange({
-          forwardSubscription(request) {
-            const input = { ...request, query: request.query || '' };
-            return {
-              subscribe(sink) {
-                const unsubscribe = wsClient.subscribe(input, sink);
-                return { unsubscribe };
-              },
-            };
-          },
-        }),
-      ],
+    const absintheSocket = withAbsintheSocket.create(new PhoenixSocket(URLSocket));
+
+    const notifier = withAbsintheSocket.send(absintheSocket, {
+      operation,
+      variables: { repoName: '/1' },
     });
 
-    const { unsubscribe } = client.subscription(MessageSub, {}).subscribe(({ data, error }) => {
-      console.log({ data, error });
-      if (data) {
-        // const { subAddress } = data;
-        // setShowAddress(subAddress);
-        revalidateHome();
-      }
+    const logEvent =
+      (eventName: unknown) =>
+      (...args: any) => {
+        if (eventName === 'result') {
+          const { data } = args[0];
+          console.log({ data });
+          revalidateHome();
+        } else console.log(eventName, ...args);
+      };
+
+    withAbsintheSocket.observe(absintheSocket, notifier, {
+      onAbort: logEvent('abort'),
+      onError: logEvent('error'),
+      onStart: logEvent('open'),
+      onResult: logEvent('result'),
+      onCancel: logEvent('cancel'),
     });
+
     return () => {
-      unsubscribe();
+      // cualquiera de las 2 formas se puede cerrar el socket
+      absintheSocket.phoenixSocket.disconnect();
+      // withAbsintheSocket.cancel(absintheSocket, notifier);
     };
   }, []);
 
-  return null;
+  return <>null</>;
 };
 
 export default UseSubscribeGQ;

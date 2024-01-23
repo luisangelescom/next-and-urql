@@ -9,15 +9,22 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@absinthe/socket": "^0.2.1",
     "@urql/core": "^4.2.2",
+    "graphql": "^16.8.1",
     "graphql-ws": "^5.14.3",
+    "mqtt": "^5.3.4",
     "next": "14.0.4",
+    "phoenix": "^1.7.10",
+    "phoenix-channels": "^1.0.0",
     "react": "^18",
     "react-dom": "^18",
     "urql": "^4.0.6"
   },
   "devDependencies": {
+    "@types/absinthe__socket": "^0.2.6",
     "@types/node": "^20",
+    "@types/phoenix": "^1.6.4",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "autoprefixer": "^10.0.1",
